@@ -1,3 +1,4 @@
+var CronJob = require('cron').CronJob;
 const puppeteer = require('puppeteer');
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://mongodb:m0ng0db@cluster0-0m1qt.mongodb.net/test?retryWrites=true&w=majority";
@@ -65,26 +66,34 @@ const saveData = (data) => {
             }, {$set: item}, {upsert: true});
         });
         const docs = collection.find({}).toArray();
-        // console.log("Found the following records");
         docs.then(res => console.log(res));
-        client.close();
+        // client.close();
     });
 }
 
-(async () => {
-    const browser = await puppeteer.launch();
-    const arr = [];
-    for (let i = 0; i < 20; i++) {
-        const page = await browser.newPage();
-        await page.goto('http://agaar.mn/station/' + (i + 1));
-        const data = await getData(page);
-        if (data !== undefined) {
-            arr.push(data);
-        }
-    }
-    saveData(arr);
-  
-    browser.close();
-  })();
+var CronJob = require('cron').CronJob;
+var job = new CronJob(
+	'0 */15 * * * *',
+	function() {
+		console.log('You will see this message every 15 minutes');
+        (async () => {
+            const browser = await puppeteer.launch();
+            const arr = [];
+            for (let i = 0; i < 20; i++) {
+                const page = await browser.newPage();
+                await page.goto('http://agaar.mn/station/' + (i + 1));
+                const data = await getData(page);
+                if (data !== undefined) {
+                    arr.push(data);
+                }
+            }
+            saveData(arr);
+          
+            browser.close();
+          })();
+	},
+	null,
+	true
+);
 
 
